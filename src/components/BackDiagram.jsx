@@ -2,45 +2,44 @@ import { forwardRef } from 'react';
 import { formatInches } from '../lib/drafting';
 
 const SCALE = 28;
-const PADDING = 42;
+const PADDING = 38;
 
-function x(px) {
-  return PADDING + px * SCALE;
+function sx(value) {
+  return PADDING + value * SCALE;
 }
 
-function y(px) {
-  return PADDING + px * SCALE;
+function sy(value) {
+  return PADDING + value * SCALE;
 }
 
-function scalePath(path) {
-  const tokens = path.split(' ');
-  let isX = true;
-  return tokens
-    .map((token) => {
-      if (['M', 'L', 'Q', 'Z'].includes(token)) {
-        if (token === 'Z') {
-          return token;
-        }
-        isX = true;
-        return token;
-      }
-
-      const value = Number(token);
-      if (Number.isNaN(value)) {
-        return token;
-      }
-
-      const scaled = isX ? x(value) : y(value);
-      isX = !isX;
-      return scaled.toFixed(2);
-    })
-    .join(' ');
+function drawPointLabel(label, pt, dx = 0.14, dy = -0.14) {
+  return (
+    <text x={sx(pt.x + dx)} y={sy(pt.y + dy)} fill="#29344e" fontSize="12" fontWeight="700">
+      {label}
+    </text>
+  );
 }
 
 const BackDiagram = forwardRef(function BackDiagram({ draft, style }, ref) {
-  const width = x(draft.viewWidth);
-  const height = y(draft.viewHeight);
-  const shapingLabel = style === 'princess' ? 'Back panel seam' : 'Back dart';
+  const width = sx(draft.width + 5.6);
+  const height = sy(draft.length + 2.8);
+  const { O, A, B, C, D, E, F, G, P, L1, L2, H, I } = draft.points;
+
+  const outerShape = [
+    `M ${sx(O.x)} ${sy(A.y)}`,
+    `L ${sx(O.x)} ${sy(D.y)}`,
+    `Q ${sx(0.12)} ${sy(0.16)} ${sx(C.x)} ${sy(C.y)}`,
+    `L ${sx(E.x)} ${sy(E.y)}`,
+    `Q ${sx(draft.width - 0.6)} ${sy(B.y - 0.45)} ${sx(F.x)} ${sy(F.y)}`,
+    `L ${sx(G.x)} ${sy(G.y)}`,
+    `L ${sx(O.x)} ${sy(A.y)}`,
+  ].join(' ');
+
+  const waistDart = [
+    `M ${sx(L1.x)} ${sy(L1.y)}`,
+    `L ${sx(P.x)} ${sy(P.y)}`,
+    `L ${sx(L2.x)} ${sy(L2.y)}`,
+  ].join(' ');
 
   return (
     <svg
@@ -51,26 +50,46 @@ const BackDiagram = forwardRef(function BackDiagram({ draft, style }, ref) {
       role="img"
       aria-label="Back blouse draft"
     >
-      <rect width={width} height={height} rx="28" fill="#fffdf9" />
-      <line x1={x(0)} y1={y(draft.guides.armholeDepth)} x2={x(draft.viewWidth - 0.8)} y2={y(draft.guides.armholeDepth)} stroke="#f4b22d" strokeDasharray="7 7" />
-      <line x1={x(0)} y1={y(draft.guides.waistLine)} x2={x(draft.viewWidth - 0.8)} y2={y(draft.guides.waistLine)} stroke="#e76181" strokeDasharray="8 8" />
-      <line x1={x(0)} y1={y(0)} x2={x(0)} y2={y(draft.guides.waistLine)} stroke="#36588a" strokeDasharray="6 6" />
+      <rect width={width} height={height} rx="26" fill="#fffdf9" />
 
-      <path d={scalePath(draft.outlinePath)} fill="rgba(54, 88, 138, 0.08)" stroke="#29344e" strokeWidth="4" strokeLinejoin="round" />
-      <path d={scalePath(draft.shapingPath)} fill="none" stroke="#d82a56" strokeWidth="3.2" strokeDasharray={style === 'princess' ? undefined : '10 8'} strokeLinecap="round" />
+      <rect
+        x={sx(O.x)}
+        y={sy(O.y)}
+        width={sx(draft.width) - sx(0)}
+        height={sy(draft.length) - sy(0)}
+        fill="none"
+        stroke="#d7dfec"
+        strokeDasharray="7 7"
+      />
 
-      <text x={x(0.2)} y={y(0.8)} fill="#29344e" fontSize="16" fontWeight="700">Back</text>
-      <text x={x(0.2)} y={y(draft.guides.armholeDepth - 0.16)} fill="#b64a07" fontSize="13">Armhole depth</text>
-      <text x={x(0.2)} y={y(draft.guides.waistLine - 0.16)} fill="#b61e46" fontSize="13">Waist line</text>
-      <text x={x(draft.guides.dartX + 0.2)} y={y(draft.guides.waistLine * 0.58)} fill="#d82a56" fontSize="13">
-        {shapingLabel}
+      <line x1={sx(O.x)} y1={sy(B.y)} x2={sx(F.x)} y2={sy(B.y)} stroke="#f4b22d" strokeDasharray="7 7" />
+      <line x1={sx(O.x)} y1={sy(H.y)} x2={sx(I.x)} y2={sy(H.y)} stroke="#8bb0e5" strokeDasharray="8 8" />
+      <line x1={sx(O.x)} y1={sy(O.y)} x2={sx(O.x)} y2={sy(A.y)} stroke="#36588a" strokeDasharray="6 6" />
+
+      <path d={outerShape} fill="rgba(54, 88, 138, 0.09)" stroke="#29344e" strokeWidth="3.4" strokeLinejoin="round" />
+      <path d={waistDart} fill="none" stroke={style === 'princess' ? '#d82a56' : '#36588a'} strokeWidth="2.5" />
+
+      <text x={sx(0.2)} y={sy(0.75)} fill="#29344e" fontSize="16" fontWeight="700">Back draft</text>
+      <text x={sx(0.18)} y={sy(B.y - 0.16)} fill="#b64a07" fontSize="13">Armhole line</text>
+      <text x={sx(0.18)} y={sy(H.y - 0.16)} fill="#456fa7" fontSize="13">Back bust line</text>
+      <text x={sx(0.18)} y={sy(A.y + 0.8)} fill="#29344e" fontSize="13">Center back on fold</text>
+      <text x={sx(P.x + 0.22)} y={sy(P.y - 0.3)} fill={style === 'princess' ? '#d82a56' : '#36588a'} fontSize="12">
+        Back waist dart
       </text>
-      <text x={x(0.16)} y={y(draft.guides.waistLine + 0.85)} fill="#29344e" fontSize="13">Center back fold</text>
-      <text x={x(draft.guides.halfShoulder - 0.35)} y={y(0.44)} fill="#29344e" fontSize="13">Shoulder</text>
 
-      <g transform={`translate(${x(draft.viewWidth - 3.7)} ${y(0.85)})`}>
+      {drawPointLabel('O', O)}
+      {drawPointLabel('A', A, 0.14, 0.45)}
+      {drawPointLabel('B', B)}
+      {drawPointLabel('C', C)}
+      {drawPointLabel('D', D, 0.2, 0.38)}
+      {drawPointLabel('E', E)}
+      {drawPointLabel('F', F, 0.14, 0.38)}
+      {drawPointLabel('G', G, 0.14, 0.45)}
+      {drawPointLabel('P', P)}
+
+      <g transform={`translate(${sx(draft.width + 1.2)} ${sy(1.1)})`}>
         {draft.measurements.map((item, index) => (
-          <text key={item.label} y={index * 18} fill="#29344e" fontSize="12">
+          <text key={item.label} y={index * 17} fill="#29344e" fontSize="11.5">
             {item.label}: {formatInches(item.value)}
           </text>
         ))}

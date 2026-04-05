@@ -5,6 +5,8 @@ const toNumber = (value, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const point = (x, y) => ({ x, y });
+
 export const defaultMeasurements = {
   fabricLength: '50',
   shoulder: '14',
@@ -45,162 +47,153 @@ export function normalizeMeasurements(rawMeasurements) {
 }
 
 function buildFrontDraft(measurements, style) {
-  const bustRef = Math.max(measurements.bust, measurements.chest);
-  const width = clamp(bustRef / 4 + 1.5, 10, 20);
-  const waistWidth = clamp(measurements.waist / 4 + 0.85, 8.5, width);
-  const halfShoulder = clamp(measurements.shoulder / 2 + 0.35, 5.6, width - 1.1);
-  const shoulderDrop = 0.9;
-  const neckWidth = clamp(measurements.neck / 6 + 0.4, 2.2, 4.5);
-  const neckDepth = clamp(measurements.neck / 5 + 0.8, 3.1, 5.6);
-  const armholeDepth = clamp(bustRef / 6 + 2.45, 7.8, measurements.blouseLength - 3.25);
-  const bustLine = clamp(armholeDepth + 1.5, armholeDepth + 1, measurements.blouseLength - 3.2);
-  const underarmX = width - 0.35;
-  const underarmY = armholeDepth + 0.7;
-  const sideWaistX = clamp(waistWidth + 0.8, 9, width + 0.2);
-  const hemY = measurements.blouseLength;
-  const princessX = clamp(width * 0.56, 5.2, width - 1.3);
-  const princessBustX = princessX + 0.35;
-  const dartIntake = clamp((width - waistWidth) * 0.65, 0.7, 2.1);
-
-  const outlinePath = [
-    `M 0 ${hemY}`,
-    `L 0 ${neckDepth}`,
-    `Q 0 0 ${neckWidth} 0`,
-    `L ${halfShoulder} ${shoulderDrop}`,
-    `Q ${width - 0.8} ${armholeDepth * 0.18} ${underarmX} ${underarmY}`,
-    `L ${sideWaistX} ${hemY}`,
-    'Z',
-  ].join(' ');
-
-  const princessPath = style === 'princess'
-    ? [
-        `M ${princessX - 0.2} ${shoulderDrop + 0.4}`,
-        `Q ${princessX + 0.65} ${bustLine - 0.9} ${princessBustX} ${bustLine}`,
-        `Q ${princessX} ${hemY - 1.2} ${princessX - 0.65} ${hemY}`,
-      ].join(' ')
-    : [
-        `M ${princessX} ${bustLine - 2}`,
-        `L ${princessX} ${hemY - 0.4}`,
-      ].join(' ');
+  const chestRef = Math.max(measurements.chest, measurements.bust - 1);
+  const width = clamp(chestRef / 4 + (style === 'princess' ? 1 : 0.85), 10.5, 18.5);
+  const length = measurements.blouseLength;
+  const armholeDepth = clamp(chestRef / 6 + 1.05, 6.8, length - 3.25);
+  const bustLine = clamp(armholeDepth + 1.25, armholeDepth + 0.9, length - 3);
+  const waistWidth = clamp(measurements.waist / 4 + (style === 'princess' ? 2 : 1.35), 9.5, width + 0.85);
+  const neckWidth = clamp(Math.max(measurements.neck / 6, measurements.chest / 12), 2.2, 4.2);
+  const neckDepth = clamp(measurements.neck / 6 + 1.55, 3.4, 7.25);
+  const shoulderDrop = 1;
+  const shoulderWidth = clamp(measurements.shoulder / 2, 5.25, width - 1);
+  const shoulderTip = point(shoulderWidth, shoulderDrop);
+  const underarm = point(width, armholeDepth);
+  const waist = point(waistWidth, length);
+  const apex = point(clamp(width * 0.58, neckWidth + 2, width - 1.75), bustLine);
+  const dartHalf = clamp((width - waistWidth + 1.2) / 4, 0.45, 0.9);
+  const waistDartLeft = point(apex.x - dartHalf, length);
+  const waistDartRight = point(apex.x + dartHalf, length);
+  const princessWaist = point(clamp(apex.x - 0.2, neckWidth + 1.5, waistWidth - 0.5), length);
+  const princessArmhole = point(clamp(width - 1.55, apex.x + 1.1, width - 0.6), armholeDepth - 1.25);
+  const centerPanelHem = point(clamp(princessWaist.x + 0.1, apex.x - 0.4, apex.x + 0.4), length);
+  const beltDrop = clamp(length * 0.26, 3.3, 5.2);
 
   return {
-    viewWidth: width + 2.4,
-    viewHeight: hemY + 2.4,
-    outlinePath,
-    princessPath,
+    width,
+    length,
     measurements: [
-      { label: 'Shoulder', value: measurements.shoulder },
-      { label: 'Bust / 4 + ease', value: width },
-      { label: 'Waist / 4 + ease', value: waistWidth },
-      { label: 'Front neck depth', value: neckDepth },
+      { label: 'Length OA', value: length },
+      { label: 'Armhole depth OB', value: armholeDepth },
+      { label: 'Quarter chest + ease', value: width },
+      { label: 'Quarter waist + ease', value: waistWidth },
     ],
+    points: {
+      O: point(0, 0),
+      A: point(0, length),
+      B: point(0, armholeDepth),
+      C: point(neckWidth, 0),
+      D: point(0, neckDepth),
+      E: shoulderTip,
+      F: underarm,
+      G: waist,
+      P: apex,
+      W: princessArmhole,
+      Y: princessWaist,
+      L1: waistDartLeft,
+      L2: waistDartRight,
+      H: point(0, bustLine),
+      I: point(width, bustLine),
+      T: point(0, beltDrop),
+    },
     guides: {
-      bustLine,
-      waistLine: hemY,
       armholeDepth,
+      bustLine,
+      beltDrop,
+      shoulderDrop,
       neckWidth,
       neckDepth,
-      halfShoulder,
-      underarmX,
-      underarmY,
-      princessX,
-      dartIntake,
+      centerPanelHem,
     },
+    style,
   };
 }
 
 function buildBackDraft(measurements, style) {
-  const chestRef = Math.max(measurements.chest, measurements.bust - 1);
-  const width = clamp(chestRef / 4 + 1.1, 9.5, 18);
-  const waistWidth = clamp(measurements.waist / 4 + 0.75, 8.5, width);
-  const halfShoulder = clamp(measurements.shoulder / 2 + 0.2, 5.4, width - 1.3);
-  const shoulderDrop = 0.7;
-  const neckWidth = clamp(measurements.neck / 6 + 0.35, 2.1, 4.1);
-  const neckDepth = clamp(measurements.neck / 10 + 0.4, 1.2, 2.8);
-  const armholeDepth = clamp(chestRef / 6 + 2.2, 7.2, measurements.blouseLength - 3.1);
-  const underarmX = width - 0.25;
-  const underarmY = armholeDepth + 0.4;
-  const sideWaistX = clamp(waistWidth + 0.6, 8.8, width + 0.2);
-  const hemY = measurements.blouseLength;
-  const dartX = clamp(width * 0.5, 4.6, width - 1.5);
-
-  const outlinePath = [
-    `M 0 ${hemY}`,
-    `L 0 ${neckDepth}`,
-    `Q 0 0 ${neckWidth} 0`,
-    `L ${halfShoulder} ${shoulderDrop}`,
-    `Q ${width - 0.55} ${armholeDepth * 0.24} ${underarmX} ${underarmY}`,
-    `L ${sideWaistX} ${hemY}`,
-    'Z',
-  ].join(' ');
-
-  const shapingPath = style === 'princess'
-    ? [
-        `M ${dartX - 0.35} ${shoulderDrop + 0.4}`,
-        `Q ${dartX + 0.15} ${hemY * 0.45} ${dartX - 0.1} ${hemY}`,
-      ].join(' ')
-    : [
-        `M ${dartX} ${hemY * 0.42}`,
-        `L ${dartX} ${hemY - 0.4}`,
-      ].join(' ');
+  const chestRef = Math.max(measurements.chest, measurements.bust - 2);
+  const width = clamp(chestRef / 4 + 0.5, 10, 17.5);
+  const length = measurements.blouseLength;
+  const armholeDepth = clamp(chestRef / 6 + 1, 6.6, length - 3.2);
+  const waistWidth = clamp(measurements.waist / 4 + 1.5, 9, width + 1.1);
+  const neckWidth = clamp(Math.max(measurements.neck / 6 - 0.1, measurements.chest / 12 - 0.1), 2.1, 4);
+  const neckDepth = clamp(measurements.neck / 10 + 0.8, 1.2, 3.1);
+  const shoulderDrop = 1;
+  const shoulderWidth = clamp(measurements.shoulder / 2 - 0.2, 5.15, width - 1.2);
+  const shoulderTip = point(shoulderWidth, shoulderDrop);
+  const underarm = point(width, armholeDepth);
+  const waist = point(waistWidth, length);
+  const apex = point(clamp(width * 0.53, neckWidth + 1.8, width - 2), armholeDepth + 1.55);
+  const dartHalf = clamp((width - waistWidth + 1.15) / 4, 0.45, 0.8);
 
   return {
-    viewWidth: width + 2.1,
-    viewHeight: hemY + 2.2,
-    outlinePath,
-    shapingPath,
+    width,
+    length,
     measurements: [
-      { label: 'Shoulder', value: measurements.shoulder },
-      { label: 'Chest / 4 + ease', value: width },
-      { label: 'Waist / 4 + ease', value: waistWidth },
-      { label: 'Back neck depth', value: neckDepth },
+      { label: 'Length OA', value: length },
+      { label: 'Armhole depth OB', value: armholeDepth },
+      { label: 'Quarter chest + 1/2"', value: width },
+      { label: 'Quarter waist + 1 1/2"', value: waistWidth },
     ],
+    points: {
+      O: point(0, 0),
+      A: point(0, length),
+      B: point(0, armholeDepth),
+      C: point(neckWidth, 0),
+      D: point(0, neckDepth),
+      E: shoulderTip,
+      F: underarm,
+      G: waist,
+      P: apex,
+      L1: point(apex.x - dartHalf, length),
+      L2: point(apex.x + dartHalf, length),
+      H: point(0, armholeDepth + 1.4),
+      I: point(width, armholeDepth + 1.4),
+    },
     guides: {
       armholeDepth,
-      waistLine: hemY,
+      waistLine: length,
+      shoulderDrop,
       neckWidth,
       neckDepth,
-      halfShoulder,
-      underarmX,
-      underarmY,
-      dartX,
+      style,
     },
   };
 }
 
 function buildSleeveDraft(measurements) {
-  const bicepWidth = clamp(Math.max(measurements.chest, measurements.bust) / 4 + 2.1, 11, 18);
-  const capHeight = clamp(measurements.chest / 10 + 2.2, 4.5, 7.2);
   const sleeveLength = measurements.sleeveLength;
-  const hemWidth = clamp(bicepWidth * 0.76, 8, 14.5);
-  const halfCap = bicepWidth / 2;
-
-  const outlinePath = [
-    `M 0 ${capHeight + sleeveLength}`,
-    `L ${halfCap - hemWidth / 2} ${capHeight + sleeveLength}`,
-    `Q ${halfCap - 0.25} ${capHeight + sleeveLength * 0.45} ${bicepWidth} ${capHeight}`,
-    `Q ${halfCap + 0.65} 0 ${halfCap} 0`,
-    `Q ${halfCap - 0.65} 0 0 ${capHeight}`,
-    `Q ${halfCap - hemWidth * 0.55} ${capHeight + sleeveLength * 0.45} 0 ${capHeight + sleeveLength}`,
-    'Z',
-  ].join(' ');
+  const capHeight = clamp(measurements.chest / 12 + 2.1, 4.2, 6.6);
+  const width = clamp(Math.max(measurements.chest, measurements.bust) / 4 + 1.5, 10.5, 17);
+  const hemWidth = clamp(width * 0.74, 8, 13.2);
+  const midX = width / 2;
 
   return {
-    viewWidth: bicepWidth + 2.4,
-    viewHeight: capHeight + sleeveLength + 2.4,
-    outlinePath,
+    width,
+    height: capHeight + sleeveLength,
     measurements: [
       { label: 'Sleeve length', value: sleeveLength },
-      { label: 'Bicep width', value: bicepWidth },
       { label: 'Cap height', value: capHeight },
+      { label: 'Top sleeve width', value: width },
       { label: 'Hem width', value: hemWidth },
     ],
+    points: {
+      O: point(0, capHeight),
+      A: point(width, capHeight),
+      B: point(midX, 0),
+      C: point(midX, capHeight + sleeveLength),
+      D: point(midX - hemWidth / 2, capHeight + sleeveLength),
+      E: point(midX + hemWidth / 2, capHeight + sleeveLength),
+      F1: point(width * 0.28, capHeight * 0.2),
+      F2: point(width * 0.72, capHeight * 0.12),
+      N1: point(width * 0.22, capHeight * 0.58),
+      N2: point(width * 0.78, capHeight * 0.5),
+    },
     guides: {
       capHeight,
       sleeveLength,
-      bicepWidth,
+      midX,
       hemWidth,
-      halfCap,
+      width,
     },
   };
 }

@@ -143,8 +143,9 @@ export default function App() {
                 Draft front, back, and sleeve diagrams from your blouse measurements.
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
-                Enter measurements in inches and the app lays out a clear blouse block with separate draft diagrams.
-                Switch between a classic blouse and a princess cut version, then print or download the diagrams as SVG files.
+                Enter measurements in inches and the app plots blouse drafts like a tailoring sheet, with a construction box,
+                fold line, named plotting points, darts, and a separate sleeve cap. Switch between a classic blouse and a princess cut version,
+                then print or download the diagrams as SVG files.
               </p>
 
               <div className="print-hidden mt-6 flex flex-col gap-3 sm:flex-row">
@@ -199,9 +200,9 @@ export default function App() {
                 <h2 className="text-xl font-semibold tracking-tight text-ink-950">Draft notes</h2>
               </div>
               <ul className="mt-4 space-y-3 text-sm leading-6 text-ink-700">
-                <li>All diagrams are drafted in inches and rendered as half-pattern cutting guides.</li>
-                <li>The front, back, and sleeve are separated so you can print them independently.</li>
-                <li>Princess mode adds the bust-to-waist seam line; classic mode keeps the shaping simpler.</li>
+                <li>Each draft now starts from a plotting rectangle, which is how blouse drafts are usually marked on paper.</li>
+                <li>Front and back show separate neck depth, shoulder slope, armhole line, and waist shaping.</li>
+                <li>Princess mode splits the front into a center panel and side panel instead of drawing only one loose seam line.</li>
               </ul>
             </section>
           </div>
@@ -210,8 +211,8 @@ export default function App() {
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42 }}>
               <DiagramCard
                 title="Front Draft"
-                subtitle="Front body block with neckline, shoulder slope, armhole depth, waist line, and princess seam or dart shaping."
-                caption="Use the center-front fold line on the left edge. In princess mode, the inner seam line helps separate the center panel and side panel."
+                subtitle="Front plotting draft with labelled points, construction lines, front neck depth, bust apex, and either a waist dart or a princess-panel split."
+                caption="Classic mode shows a one-piece front with a waist dart. Princess mode shows the center front panel and side front panel drafted from the same plotting box."
                 onDownload={() => downloadSvg(frontRef, 'indian-blouse-front.svg')}
                 onPrint={handlePrint}
               >
@@ -222,8 +223,8 @@ export default function App() {
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.46 }}>
               <DiagramCard
                 title="Back Draft"
-                subtitle="Back body block with a shallower neckline and simplified shaping so it can be cut separately from the front."
-                caption="Use the center-back fold line on the left edge if you are cutting on fold. Princess mode gives you a vertical panel line for back shaping."
+                subtitle="Back plotting draft with a shallower neck curve, back armhole, waist dart, and center-back fold line."
+                caption="This stays a clear back block, so it can be marked separately from the front and matched cleanly at shoulder and armhole."
                 onDownload={() => downloadSvg(backRef, 'indian-blouse-back.svg')}
                 onPrint={handlePrint}
               >
@@ -234,8 +235,8 @@ export default function App() {
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <DiagramCard
                 title="Sleeve Draft"
-                subtitle="Sleeve block derived from the blouse measurements, with cap height and hem width shown as a separate printable piece."
-                caption="The sleeve diagram is kept separate for printing. Leave the sleeve length blank if you want the app to derive a short blouse sleeve automatically."
+                subtitle="Sleeve plotting draft with a separate front notch and back notch, bicep line, center grain, and hem width."
+                caption="The front sleeve curve is kept slightly deeper than the back curve, which is the main visual difference expected in a usable blouse sleeve draft."
                 onDownload={() => downloadSvg(sleeveRef, 'indian-blouse-sleeve.svg')}
                 onPrint={handlePrint}
               >
