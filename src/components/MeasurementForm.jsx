@@ -4,21 +4,23 @@ const groups = [
   {
     title: 'Body',
     fields: [
-      { name: 'bust', label: 'Bust', hint: 'Full bust round' },
-      { name: 'waist', label: 'Waist', hint: 'Body waist round' },
-      { name: 'shoulder', label: 'Shoulder', hint: 'Across shoulder' },
-      { name: 'blouseLength', label: 'Blouse length', hint: 'Shoulder to hem' },
-      { name: 'frontNeckDepth', label: 'Front neck depth', hint: 'Boat neck front drop' },
-      { name: 'backNeckDepth', label: 'Back neck depth', hint: 'Back boat neck drop' },
+      { name: 'backLength', label: 'Back length', hint: 'Back shoulder to hem' },
+      { name: 'frontLength', label: 'Front length', hint: 'Front shoulder to hem' },
+      { name: 'waist', label: 'Waist circumference', hint: 'Natural waist round' },
+      { name: 'shoulder', label: 'Shoulder width', hint: 'Across shoulder' },
+      { name: 'upperChest', label: 'Upper chest', hint: 'Upper chest round' },
+      { name: 'fullChest', label: 'Full chest', hint: 'Full bust / chest round' },
     ],
   },
   {
-    title: 'Shaping',
+    title: 'Princess Fit',
     fields: [
-      { name: 'armholeRound', label: 'Armhole round', hint: 'Full armhole measurement' },
-      { name: 'bustPointHeight', label: 'Shoulder to apex', hint: 'Shoulder to bust point' },
-      { name: 'bustPointSpan', label: 'Bust point span', hint: 'Point to point across bust' },
-      { name: 'frontOpening', label: 'Front opening', hint: 'Button / hook overlap width' },
+      { name: 'shoulderToBust', label: 'Shoulder to bust point', hint: 'Shoulder seam to apex' },
+      { name: 'apexToApex', label: 'Apex to apex', hint: 'Bust point to bust point' },
+      { name: 'lowerBust', label: 'Lower bust', hint: 'Under-bust round' },
+      { name: 'frontNeckDepth', label: 'Front neck depth', hint: 'Boat neck front drop' },
+      { name: 'backNeckDepth', label: 'Back neck depth', hint: 'Boat neck back drop' },
+      { name: 'frontOpening', label: 'Front opening width', hint: 'Hook placket / overlap' },
     ],
   },
   {
@@ -39,10 +41,10 @@ export default function MeasurementForm({ values, onChange }) {
             Measurement Sheet
           </p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink-950">
-            Enter the measurements needed for a boat-neck princess blouse
+            Enter the measurements used in real princess-cut blouse drafting
           </h2>
           <p className="mt-2 text-sm leading-6 text-ink-600">
-            This draft now asks for the shaping measurements a tailor actually needs for a princess-cut front.
+            This is closer to the measurement list used by blouse pattern calculators than the earlier reduced form.
           </p>
         </div>
         <div className="rounded-full bg-saffron-100 px-3 py-1 text-xs font-semibold text-saffron-800">

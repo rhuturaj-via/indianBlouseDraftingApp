@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import { formatInches } from '../lib/drafting';
 
 const SCALE = 28;
-const PADDING = 38;
+const PADDING = 36;
 
 function sx(value) {
   return PADDING + value * SCALE;
@@ -13,39 +13,28 @@ function sy(value) {
 }
 
 const FrontDiagram = forwardRef(function FrontDiagram({ draft }, ref) {
-  const width = sx(draft.width + 5.5);
+  const width = sx(draft.width + 6);
   const height = sy(draft.length + 2.8);
-  const {
-    centerTop,
-    centerBottom,
-    neckEnd,
-    shoulderEnd,
-    princessTop,
-    princessWaist,
-    bustPoint,
-    sideSeamTop,
-    sideSeamWaist,
-    openingTop,
-    openingBottom,
-    frontDepthMark,
-  } = draft.points;
+  const { center, side } = draft.pieces;
 
   const centerPiece = [
-    `M ${sx(centerTop.x)} ${sy(centerBottom.y)}`,
-    `L ${sx(centerTop.x)} ${sy(frontDepthMark.y)}`,
-    `Q ${sx(neckEnd.x * 0.45)} ${sy(0.08)} ${sx(neckEnd.x)} ${sy(neckEnd.y)}`,
-    `L ${sx(shoulderEnd.x)} ${sy(shoulderEnd.y)}`,
-    `Q ${sx(princessTop.x - 0.35)} ${sy(draft.guides.armholeDepth - 0.25)} ${sx(princessTop.x)} ${sy(princessTop.y)}`,
-    `Q ${sx(bustPoint.x - 0.55)} ${sy(bustPoint.y)} ${sx(princessWaist.x)} ${sy(princessWaist.y)}`,
-    `L ${sx(centerTop.x)} ${sy(centerBottom.y)}`,
+    `M ${sx(center.centerTop.x)} ${sy(center.centerBottom.y)}`,
+    `L ${sx(center.centerTop.x)} ${sy(center.depthMark.y)}`,
+    `Q ${sx(center.neckEnd.x * 0.52)} ${sy(0.06)} ${sx(center.neckEnd.x)} ${sy(center.neckEnd.y)}`,
+    `L ${sx(center.shoulderEnd.x)} ${sy(center.shoulderEnd.y)}`,
+    `Q ${sx(center.princessTop.x - 0.38)} ${sy(center.princessTop.y + 0.28)} ${sx(center.princessTop.x)} ${sy(center.princessTop.y)}`,
+    `Q ${sx(center.apex.x - 0.52)} ${sy(center.apex.y)} ${sx(center.princessUnderBust.x)} ${sy(center.princessUnderBust.y)}`,
+    `Q ${sx(center.princessHem.x - 0.1)} ${sy(center.princessHem.y - 0.65)} ${sx(center.princessHem.x)} ${sy(center.princessHem.y)}`,
+    `L ${sx(center.centerTop.x)} ${sy(center.centerBottom.y)}`,
   ].join(' ');
 
   const sidePiece = [
-    `M ${sx(princessTop.x)} ${sy(princessTop.y)}`,
-    `Q ${sx(bustPoint.x + 0.95)} ${sy(bustPoint.y - 0.12)} ${sx(princessWaist.x)} ${sy(princessWaist.y)}`,
-    `L ${sx(sideSeamWaist.x)} ${sy(sideSeamWaist.y)}`,
-    `L ${sx(sideSeamTop.x)} ${sy(sideSeamTop.y)}`,
-    `Q ${sx(sideSeamTop.x - 0.5)} ${sy(draft.guides.armholeDepth - 0.75)} ${sx(princessTop.x)} ${sy(princessTop.y)}`,
+    `M ${sx(side.princessTop.x)} ${sy(side.princessTop.y)}`,
+    `Q ${sx(side.princessTop.x + 1.1)} ${sy(side.princessTop.y - 0.6)} ${sx(side.sideTop.x)} ${sy(side.sideTop.y)}`,
+    `L ${sx(side.sideHem.x)} ${sy(side.sideHem.y)}`,
+    `Q ${sx(side.sideUnderBust.x - 0.25)} ${sy(side.sideUnderBust.y - 0.55)} ${sx(side.sideUnderBust.x)} ${sy(side.sideUnderBust.y)}`,
+    `Q ${sx(side.princessUnderBust.x + 0.78)} ${sy(side.princessUnderBust.y)} ${sx(side.princessUnderBust.x)} ${sy(side.princessUnderBust.y)}`,
+    `Q ${sx(side.princessTop.x + 0.1)} ${sy(side.princessTop.y + 0.28)} ${sx(side.princessTop.x)} ${sy(side.princessTop.y)}`,
   ].join(' ');
 
   return (
@@ -58,31 +47,34 @@ const FrontDiagram = forwardRef(function FrontDiagram({ draft }, ref) {
       aria-label="Front blouse draft"
     >
       <rect width={width} height={height} rx="26" fill="#fffdf9" />
-      <rect x={sx(0)} y={sy(0)} width={sx(draft.width) - sx(0)} height={sy(draft.length) - sy(0)} fill="none" stroke="#d8dfeb" strokeDasharray="7 7" />
-
-      <path d={centerPiece} fill="rgba(255,197,82,0.18)" stroke="#821d3d" strokeWidth="3.1" strokeLinejoin="round" />
-      <path d={sidePiece} fill="rgba(54,88,138,0.1)" stroke="#36588a" strokeWidth="3.1" strokeLinejoin="round" />
+      <path d={centerPiece} fill="rgba(255,197,82,0.18)" stroke="#821d3d" strokeWidth="3.2" strokeLinejoin="round" />
+      <path d={sidePiece} fill="rgba(54,88,138,0.1)" stroke="#36588a" strokeWidth="3.2" strokeLinejoin="round" />
       <rect
-        x={sx(openingTop.x)}
-        y={sy(openingTop.y)}
-        width={sx(draft.guides.openingWidth) - sx(0)}
-        height={sy(openingBottom.y) - sy(openingTop.y)}
-        fill="rgba(255,255,255,0.75)"
-        stroke="#b7c4d8"
-        strokeWidth="2"
+        x={sx(0)}
+        y={sy(0)}
+        width={sx(draft.guides.frontOpening) - sx(0)}
+        height={sy(draft.length) - sy(0)}
+        fill="rgba(255,255,255,0.8)"
+        stroke="#c8d4e5"
+        strokeWidth="1.8"
       />
+      <circle cx={sx(center.apex.x)} cy={sy(center.apex.y)} r="4.4" fill="#f78d08" />
 
-      <circle cx={sx(bustPoint.x)} cy={sy(bustPoint.y)} r="4.5" fill="#f78d08" />
+      <text x={sx(0.2)} y={sy(0.78)} fill="#29344e" fontSize="16" fontWeight="700">Front</text>
+      <text x={sx(0.22)} y={sy(0.4)} fill="#29344e" fontSize="12">Boat neck</text>
+      <text x={sx(center.princessTop.x + 0.22)} y={sy(center.princessTop.y - 0.2)} fill="#d82a56" fontSize="12">
+        Princess seam
+      </text>
+      <text x={sx(center.apex.x + 0.18)} y={sy(center.apex.y - 0.18)} fill="#f78d08" fontSize="12">
+        Bust point
+      </text>
+      <text x={sx(0.14)} y={sy(draft.length + 0.72)} fill="#36588a" fontSize="12">Opening strip</text>
+      <text x={sx(side.sideTop.x - 0.82)} y={sy(side.sideTop.y - 0.18)} fill="#36588a" fontSize="12">Armhole</text>
+      <text x={sx(0.8)} y={sy(draft.length + 1.45)} fill="#821d3d" fontSize="12">Center front piece</text>
+      <text x={sx(draft.width - 2.7)} y={sy(draft.length + 1.45)} fill="#36588a" fontSize="12">Side front piece</text>
 
-      <text x={sx(0.2)} y={sy(0.78)} fill="#29344e" fontSize="16" fontWeight="700">Front part</text>
-      <text x={sx(0.25)} y={sy(0.38)} fill="#29344e" fontSize="12">Boat neck</text>
-      <text x={sx(princessTop.x + 0.2)} y={sy(princessTop.y - 0.18)} fill="#d82a56" fontSize="12">Princess seam</text>
-      <text x={sx(bustPoint.x + 0.18)} y={sy(bustPoint.y - 0.18)} fill="#f78d08" fontSize="12">Apex</text>
-      <text x={sx(openingTop.x + 0.12)} y={sy(draft.length + 0.7)} fill="#36588a" fontSize="12">Front opening</text>
-      <text x={sx(sideSeamTop.x - 0.85)} y={sy(sideSeamTop.y - 0.16)} fill="#36588a" fontSize="12">Armhole</text>
-
-      <g transform={`translate(${sx(draft.width + 0.9)} ${sy(1.1)})`}>
-        {draft.measurements.map((item, index) => (
+      <g transform={`translate(${sx(draft.width + 1)} ${sy(1.05)})`}>
+        {draft.labels.map((item, index) => (
           <text key={item.label} y={index * 17} fill="#29344e" fontSize="11.5">
             {item.label}: {formatInches(item.value)}
           </text>

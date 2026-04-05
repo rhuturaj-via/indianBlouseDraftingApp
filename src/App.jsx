@@ -40,15 +40,18 @@ function buildPrintSheet(refs, measurements, styleLabel) {
 
   const summary = [
     ['Pattern type', styleLabel],
-    ['Bust', formatInches(measurements.bust)],
+    ['Back length', formatInches(measurements.backLength)],
+    ['Front length', formatInches(measurements.frontLength)],
     ['Waist', formatInches(measurements.waist)],
     ['Shoulder', formatInches(measurements.shoulder)],
-    ['Blouse length', formatInches(measurements.blouseLength)],
+    ['Upper chest', formatInches(measurements.upperChest)],
+    ['Full chest', formatInches(measurements.fullChest)],
     ['Front neck depth', formatInches(measurements.frontNeckDepth)],
     ['Back neck depth', formatInches(measurements.backNeckDepth)],
-    ['Armhole round', formatInches(measurements.armholeRound)],
-    ['Shoulder to apex', formatInches(measurements.bustPointHeight)],
-    ['Bust point span', formatInches(measurements.bustPointSpan)],
+    ['Shoulder to bust', formatInches(measurements.shoulderToBust)],
+    ['Apex to apex', formatInches(measurements.apexToApex)],
+    ['Lower bust', formatInches(measurements.lowerBust)],
+    ['Front opening', formatInches(measurements.frontOpening)],
     ['Sleeve length', formatInches(measurements.sleeveLength)],
     ['Sleeve round', formatInches(measurements.sleeveRound)],
   ]
@@ -118,9 +121,9 @@ export default function App() {
 
   const measurementHighlights = [
     ['Pattern', draftSet.styleLabel],
-    ['Blouse length', formatInches(draftSet.measurements.blouseLength)],
-    ['Bust', formatInches(draftSet.measurements.bust)],
-    ['Armhole', formatInches(draftSet.measurements.armholeRound)],
+    ['Front length', formatInches(draftSet.measurements.frontLength)],
+    ['Full chest', formatInches(draftSet.measurements.fullChest)],
+    ['Shoulder to bust', formatInches(draftSet.measurements.shoulderToBust)],
     ['Sleeve length', formatInches(draftSet.measurements.sleeveLength)],
   ];
 
@@ -182,8 +185,8 @@ export default function App() {
                 ))}
               </div>
               <div className="mt-5 rounded-[24px] bg-saffron-50/10 px-4 py-4 text-sm leading-6 text-white/78">
-                The measurement sheet now includes front neck depth, back neck depth, armhole round, shoulder-to-apex,
-                and bust-point span so the princess front can be drafted as separate pieces instead of a guessed curve.
+                The measurement sheet now includes upper chest, lower bust, shoulder-to-bust, and apex-to-apex so the
+                princess front can be drafted as separate pieces instead of a guessed curve.
               </div>
             </div>
           </div>
