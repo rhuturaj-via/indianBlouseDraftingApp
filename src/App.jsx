@@ -6,7 +6,6 @@ import FrontDiagram from './components/FrontDiagram';
 import BackDiagram from './components/BackDiagram';
 import SleeveDiagram from './components/SleeveDiagram';
 import MeasurementForm from './components/MeasurementForm';
-import PatternModeToggle from './components/PatternModeToggle';
 import { buildDraftSet, defaultMeasurements, formatInches } from './lib/drafting';
 
 function downloadSvg(ref, filename) {
@@ -23,7 +22,7 @@ function downloadSvg(ref, filename) {
   URL.revokeObjectURL(url);
 }
 
-function buildPrintSheet(refs, measurements, style) {
+function buildPrintSheet(refs, measurements, styleLabel) {
   const diagrams = refs
     .map((entry) => {
       if (!entry.ref.current) {
@@ -40,15 +39,18 @@ function buildPrintSheet(refs, measurements, style) {
     .join('');
 
   const summary = [
-    ['Pattern type', style === 'princess' ? 'Princess cut blouse' : 'Classic blouse'],
-    ['Fabric length', formatInches(measurements.fabricLength)],
+    ['Pattern type', styleLabel],
+    ['Bust', formatInches(measurements.bust)],
+    ['Waist', formatInches(measurements.waist)],
     ['Shoulder', formatInches(measurements.shoulder)],
     ['Blouse length', formatInches(measurements.blouseLength)],
-    ['Waist', formatInches(measurements.waist)],
-    ['Chest', formatInches(measurements.chest)],
-    ['Bust', formatInches(measurements.bust)],
-    ['Neck', formatInches(measurements.neck)],
+    ['Front neck depth', formatInches(measurements.frontNeckDepth)],
+    ['Back neck depth', formatInches(measurements.backNeckDepth)],
+    ['Armhole round', formatInches(measurements.armholeRound)],
+    ['Shoulder to apex', formatInches(measurements.bustPointHeight)],
+    ['Bust point span', formatInches(measurements.bustPointSpan)],
     ['Sleeve length', formatInches(measurements.sleeveLength)],
+    ['Sleeve round', formatInches(measurements.sleeveRound)],
   ]
     .map(([label, value]) => `<li style="margin-bottom: 6px;"><strong>${label}:</strong> ${value}</li>`)
     .join('');
@@ -77,9 +79,7 @@ function buildPrintSheet(refs, measurements, style) {
 
 export default function App() {
   const [measurements, setMeasurements] = useState(defaultMeasurements);
-  const [style, setStyle] = useState('princess');
-
-  const draftSet = buildDraftSet(measurements, style);
+  const draftSet = buildDraftSet(measurements);
 
   const frontRef = useRef(null);
   const backRef = useRef(null);
@@ -104,7 +104,7 @@ export default function App() {
         { label: 'Sleeve draft', ref: sleeveRef },
       ],
       draftSet.measurements,
-      style,
+      draftSet.styleLabel,
     );
 
     const blob = new Blob([markup], { type: 'text/html;charset=utf-8' });
@@ -117,10 +117,10 @@ export default function App() {
   };
 
   const measurementHighlights = [
-    ['Pattern type', style === 'princess' ? 'Princess cut blouse' : 'Classic blouse'],
-    ['Fabric length', formatInches(draftSet.measurements.fabricLength)],
+    ['Pattern', draftSet.styleLabel],
     ['Blouse length', formatInches(draftSet.measurements.blouseLength)],
     ['Bust', formatInches(draftSet.measurements.bust)],
+    ['Armhole', formatInches(draftSet.measurements.armholeRound)],
     ['Sleeve length', formatInches(draftSet.measurements.sleeveLength)],
   ];
 
@@ -137,15 +137,15 @@ export default function App() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-saffron-100">
                 <Sparkles className="h-4 w-4" />
-                Indian blouse drafting studio
+                Dileep-style blouse drafting studio
               </div>
               <h1 className="mt-5 max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
-                Draft front, back, and sleeve diagrams from your blouse measurements.
+                Generate a boat-neck princess-cut blouse draft from your measurements.
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
-                Enter measurements in inches and the app plots blouse drafts like a tailoring sheet, with a construction box,
-                fold line, named plotting points, darts, and a separate sleeve cap. Switch between a classic blouse and a princess cut version,
-                then print or download the diagrams as SVG files.
+                This version is rebuilt around the Dileep Tailors and Boutique boat-neck princess-cut layout:
+                two separate front pieces, one back piece, and a shallow short-sleeve template. Enter the body
+                and shaping measurements once, then print or download the diagrams.
               </p>
 
               <div className="print-hidden mt-6 flex flex-col gap-3 sm:flex-row">
@@ -182,9 +182,8 @@ export default function App() {
                 ))}
               </div>
               <div className="mt-5 rounded-[24px] bg-saffron-50/10 px-4 py-4 text-sm leading-6 text-white/78">
-                {draftSet.measurements.derivedSleeve
-                  ? `Sleeve length was left blank, so the sleeve draft is using an auto-derived length of ${formatInches(draftSet.measurements.derivedSleeve)}.`
-                  : 'Sleeve length is using the exact value you entered.'}
+                The measurement sheet now includes front neck depth, back neck depth, armhole round, shoulder-to-apex,
+                and bust-point span so the princess front can be drafted as separate pieces instead of a guessed curve.
               </div>
             </div>
           </div>
@@ -193,16 +192,15 @@ export default function App() {
         <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(320px,380px)_minmax(0,1fr)]">
           <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             <MeasurementForm values={measurements} onChange={handleMeasurementChange} />
-            <PatternModeToggle value={style} onChange={setStyle} />
             <section className="draft-card p-5 sm:p-6">
               <div className="flex items-center gap-3">
                 <Scissors className="h-5 w-5 text-currant-700" />
                 <h2 className="text-xl font-semibold tracking-tight text-ink-950">Draft notes</h2>
               </div>
               <ul className="mt-4 space-y-3 text-sm leading-6 text-ink-700">
-                <li>Each draft now starts from a plotting rectangle, which is how blouse drafts are usually marked on paper.</li>
-                <li>Front armhole is drafted deeper than the back armhole, with a separate shoulder drop guide on both pieces.</li>
-                <li>Princess mode splits the front into a center panel and side panel, and the sleeve shows front/back notches plus a front leaf cut.</li>
+                <li>The front draft is shown as separate center-front and side-front pieces, matching the laminated paper pattern layout.</li>
+                <li>The back draft stays as one main piece with a shallow boat neck and a waist dart.</li>
+                <li>The sleeve is drawn as a short, shallow template so it reads closer to the reference cutting pattern than a standard tall sleeve cap.</li>
               </ul>
             </section>
           </div>
@@ -211,32 +209,32 @@ export default function App() {
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42 }}>
               <DiagramCard
                 title="Front Draft"
-                subtitle="Front plotting draft with the deeper front armhole, bust point, front neckline, and either a waist dart or a split princess front."
-                caption="The front armhole now cuts inward from the shoulder-drop line instead of copying the back shape. Princess mode divides the front through the bust point."
+                subtitle="Two-piece boat-neck princess front with a center-front panel, side-front panel, apex mark, and front opening strip."
+                caption="The front diagram now behaves like a real princess front: one long center panel and one separate curved side panel rather than a single fake outline."
                 onDownload={() => downloadSvg(frontRef, 'indian-blouse-front.svg')}
                 onPrint={handlePrint}
               >
-                <FrontDiagram ref={frontRef} draft={draftSet.front} style={style} />
+                <FrontDiagram ref={frontRef} draft={draftSet.front} />
               </DiagramCard>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.46 }}>
               <DiagramCard
                 title="Back Draft"
-                subtitle="Back plotting draft with a milder back armhole, shallower back neck depth, waist dart, and center-back fold line."
-                caption="The back armhole is now drafted separately from the front so it stays less scooped and more stable at the back shoulder and scye."
+                subtitle="Single back piece with a shallow boat neck, back armhole, center-back fold, and waist dart."
+                caption="This diagram is intentionally simpler than the front because the Dileep reference shows the back as one main body piece rather than another princess split."
                 onDownload={() => downloadSvg(backRef, 'indian-blouse-back.svg')}
                 onPrint={handlePrint}
               >
-                <BackDiagram ref={backRef} draft={draftSet.back} style={style} />
+                <BackDiagram ref={backRef} draft={draftSet.back} />
               </DiagramCard>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <DiagramCard
                 title="Sleeve Draft"
-                subtitle="Sleeve plotting draft with separate front and back notches, a front-side leaf cut, bicep line, center grain, and hem width."
-                caption="The sleeve now marks the front and back more clearly and includes a front leaf-cut detail as a separate cutting guide."
+                subtitle="Short adjustable sleeve template with front notch, back notch, central dip, and sleeve opening width."
+                caption="The sleeve shape is now redrawn to match the shallow, wide template shown in the Dileep paper-cut images rather than a standard blouse sleeve block."
                 onDownload={() => downloadSvg(sleeveRef, 'indian-blouse-sleeve.svg')}
                 onPrint={handlePrint}
               >
